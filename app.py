@@ -52,13 +52,8 @@ if uploaded_file is not None:
 
     with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
         img_bytes = uploaded_file.getvalue()
-<<<<<<< HEAD
-        api_url = "https://pawparazziv01-1086583640100.europe-west1.run.app"
-        res = requests.post(api_url + "/upload_image", files={'img': img_bytes})
-=======
         api_url = st.secrets['cloud_api_uri']
         res = requests.post(api_url +"/upload_image", files={'img':img_bytes})
->>>>>>> 1786d3456253b5b4fbadb561dbaa506d90205a26
 
         if res.status_code == 200:
             breeds = res.json()
@@ -89,7 +84,7 @@ if uploaded_file is not None:
                 """)
 
             # ----- BREED CHART -----
-            st.markdown("### Confidence by Breed")
+            st.markdown("###Confidence by Breed")
             st.bar_chart({breed: score for breed, score in sorted_breeds[:5]})
 
         else:
