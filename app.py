@@ -2,6 +2,8 @@ import streamlit as st
 from PIL import Image
 import requests
 import io
+import altair as alt
+import pandas as pd
 
 # ----- PAGE CONFIG -----
 st.set_page_config(
@@ -76,7 +78,26 @@ if uploaded_file is not None:
 
             # ----- BREED CHART -----
             st.markdown("### Confidence by Breed")
-            st.bar_chart({breed: score for breed, score in sorted_breeds[:5]})
+
+            chart_data = pd.DataFrame({
+                "Breed": [breed for breed, _ in sorted_breeds[:5]],
+                "Confidence": [score for _, score in sorted_breeds[:5]]
+            })
+
+            # Create a horizontal bar chart
+            bar_chart = alt.Chart(chart_data).mark_bar().encode(
+                y=alt.Y("Breed", sort='-x', title="Breed"),   # Horizontal axis
+                x=alt.X("Confidence", title="Confidence Score"),  # Vertical axis
+                tooltip=["Breed", "Confidence"]
+            ).properties(
+                width=600,  # Chart width
+                height=300  # Chart height
+            ).configure_axis(
+                labelFontSize=14,
+                titleFontSize=16
+            )
+
+            st.altair_chart(bar_chart, use_container_width=True)
 
         else:
             st.error("🐾 Oops, something went wrong. Please try again later.")
