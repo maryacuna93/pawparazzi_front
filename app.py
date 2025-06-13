@@ -12,15 +12,6 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Main app background */
-    .stApp {
-        background-color: #f0f2f6;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-    <style>
     .hero {
         background-image: url('https://img.freepik.com/free-photo/group-portrait-adorable-puppies_53876-64796.jpg?semt=ais_hybrid&w=740');
         background-size: cover;
@@ -69,12 +60,10 @@ if uploaded_file is not None:
                 st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.2f}% confidence)!")
             elif 0.5 < top_score <= 0.8:
                 st.markdown(f"""
-                    <div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffeeba; border-radius:8px;">
-                        <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.2f}%)?</strong><br>
-                         We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.2f}%) or
-                        <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
-                    </div>
-                """, unsafe_allow_html=True)
+                        🤔 Is your dog a **{top_breed}** ({top_score * 100:.2f}%)?
+                         We also suspect **{sorted_breeds[1][0]}** ({sorted_breeds[1][1] * 100:.2f}%) or
+                        **{sorted_breeds[2][0]}** ({sorted_breeds[2][1] * 100:.2f}%).
+                """)
             else:
                 st.info(f"""
                 🐶 We're not totally sure, but here are our top guesses:
@@ -84,7 +73,7 @@ if uploaded_file is not None:
                 """)
 
             # ----- BREED CHART -----
-            st.markdown("###Confidence by Breed")
+            st.markdown("### Confidence by Breed")
             st.bar_chart({breed: score for breed, score in sorted_breeds[:5]})
 
         else:
