@@ -12,20 +12,11 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-    /* Main app background */
-    .stApp {
-        background-color: #f0f2f6;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-    <style>
     .hero {
-        background-image: url('https://img.freepik.com/free-photo/group-portrait-adorable-puppies_53876-64796.jpg?semt=ais_hybrid&w=740');
+        background-image: url('https://images.unsplash.com/photo-1546421845-6471bdcf3edf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUwfHxkb2dzfGVufDB8fDB8fHww');
         background-size: cover;
-        background-position: center;
-        height: 300px;
+        background-position: center 70%;
+        height: 400px;
         border-radius: 12px;
         margin-bottom: 30px;
     }
@@ -84,7 +75,7 @@ if uploaded_file is not None:
                 """)
 
             # ----- BREED CHART -----
-            st.markdown("###Confidence by Breed")
+            st.markdown("### Confidence by Breed")
             st.bar_chart({breed: score for breed, score in sorted_breeds[:5]})
 
         else:
