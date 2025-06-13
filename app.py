@@ -39,7 +39,13 @@ uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=[
 
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
-    st.image(image, caption="📸 Your superstar!", use_container_width=True)
+    aspect_ratio = image.width / image.height
+    fixed_width = 500
+    fixed_height = int(fixed_width / aspect_ratio)
+    resized_image = image.resize((fixed_width, fixed_height))
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image(resized_image, caption="📸 Your superstar!", use_container_width=False)
 
     with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
         img_bytes = uploaded_file.getvalue()
