@@ -4,6 +4,7 @@ import requests
 import io
 import altair as alt
 import pandas as pd
+from toolkit import get_sample_image
 
 # ----- PAGE CONFIG -----
 st.set_page_config(
@@ -104,6 +105,17 @@ if uploaded_file is not None:
             )
 
             st.altair_chart(bar_chart, use_container_width=True)
+
+            relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
+
+            columns = st.columns([1 for _ in range(5)])
+
+            sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:5]]
+
+            for i in range(5):
+                with columns[i]:
+                    st.image(sample_images[i], caption=f"{sorted_breeds[i]}", use_container_width=True)
+
 
         else:
             st.error("🐾 Oops, something went wrong. Please try again later.")
