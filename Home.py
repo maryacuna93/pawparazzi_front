@@ -32,8 +32,9 @@ Upload a photo of your furry friend and let our magical breed detector reveal th
 ✨ <em>Unleash the mystery!</em> ✨
 </div>
 """, unsafe_allow_html=True)
+st.markdown("---")
 
-main_columns = st.columns([1,1])
+main_columns = st.columns([1,2])
 with main_columns[0]:
     # ----- IMAGE UPLOAD -----
     uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=["jpg", "jpeg", "png"])
@@ -50,10 +51,6 @@ with main_columns[0]:
 
 with main_columns[1]:
     if uploaded_file is not None:
-        st.write("")
-        st.write("")
-        st.write("")
-        st.write("")
         with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
             img_bytes = uploaded_file.getvalue()
             api_url = st.secrets['cloud_api_uri']
@@ -70,24 +67,23 @@ with main_columns[1]:
                 # ----- RESULTS -----
                 top_breed, top_score = sorted_breeds[0]
                 if top_score > 0.8:
-                    st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.2f}% confidence)!")
+                    st.markdown(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
                 elif 0.5 < top_score <= 0.8:
-                    st.markdown(f"""
-                        <div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffeeba; border-radius:8px;">
-                            <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.2f}%)?</strong><br>
-                            We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.2f}%) or
-                            <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
-                        </div>
-                    """, unsafe_allow_html=True)
+                    st.markdown(
+                        f"""
+                        🤔 Is your dog a **{top_breed}**({top_score * 100:.0f}%)?\n
+                        We think it could also be a **{sorted_breeds[1][0]}** ({sorted_breeds[1][1] * 100:.0f}%) or
+                        **{sorted_breeds[2][0]}** ({sorted_breeds[2][1] * 100:.0f}%).
+                        """)
                 elif 0.2 < top_score <= 0.5:
-                    st.info(f"""
+                    st.markdown(f"""
                     🐶 We're not totally sure, but here are our top guesses:
-                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.2f}%)
-                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.2f}%)
-                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
+                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.0f}%)
+                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.0f}%)
+                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.0f}%)
                     """)
                 else:
-                    st.info("""
+                    st.markdown("""
                     🐶 We are confused... It might be that:
                     - we don't know this breed
                     - there is no dog in the image
@@ -103,8 +99,14 @@ with main_columns[1]:
 
                 # Create a horizontal bar chart
                 bar_chart = alt.Chart(chart_data).mark_bar().encode(
-                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Horizontal axis
-                    x=alt.X("Confidence", title="Confidence Score"),  # Vertical axis
+                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Vertical axis
+                    x=alt.X(
+                        "Confidence",
+                        title="Confidence Score",
+                        scale=alt.Scale(domain=[0,1]),
+                        axis=alt.Axis(format='%')
+                        ),  # Horizontal axis
+                    color=alt.value('#D9455B'), #hex code for color bars
                     tooltip=["Breed", "Confidence"]
                 ).properties(
                     width=600,  # Chart width
