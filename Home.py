@@ -70,21 +70,21 @@ with main_columns[1]:
                 # ----- RESULTS -----
                 top_breed, top_score = sorted_breeds[0]
                 if top_score > 0.8:
-                    st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.2f}% confidence)!")
+                    st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
                 elif 0.5 < top_score <= 0.8:
                     st.markdown(f"""
                         <div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffeeba; border-radius:8px;">
-                            <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.2f}%)?</strong><br>
-                            We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.2f}%) or
-                            <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
+                            <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.0f}%)?</strong><br>
+                            We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.0f}%) or
+                            <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.0f}%).
                         </div>
                     """, unsafe_allow_html=True)
                 elif 0.2 < top_score <= 0.5:
                     st.info(f"""
                     🐶 We're not totally sure, but here are our top guesses:
-                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.2f}%)
-                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.2f}%)
-                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
+                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.0f}%)
+                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.0f}%)
+                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.0f}%)
                     """)
                 else:
                     st.info("""
