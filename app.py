@@ -108,11 +108,11 @@ if uploaded_file is not None:
 
             relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
 
-            columns = st.columns([1 for _ in range(5)])
+            columns = st.columns([1 for _ in range(3)])
 
-            sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:5]]
+            sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
 
-            for i in range(5):
+            for i in range(3):
                 with columns[i]:
                     st.image(sample_images[i], caption=f"{sorted_breeds[i]}", use_container_width=True)
 
