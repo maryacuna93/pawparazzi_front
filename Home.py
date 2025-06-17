@@ -51,10 +51,6 @@ with main_columns[0]:
 
 with main_columns[1]:
     if uploaded_file is not None:
-        #st.write("")
-        #st.write("")
-        #st.write("")
-        #st.write("")
         with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
             img_bytes = uploaded_file.getvalue()
             api_url = st.secrets['cloud_api_uri']
