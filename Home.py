@@ -87,11 +87,11 @@ with main_columns[1]:
                     - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
                     """)
                 else:
-                    st.info(f"""
-                    🐶 We are confused... It might be that\n
-                        - we don't know this breed\n
-                        - there is no dog in the image\n
-                        - the image is blurry or too difficult to understand
+                    st.info("""
+                    🐶 We are confused... It might be that:
+                    - we don't know this breed
+                    - there is no dog in the image
+                    - the image is blurry or too difficult to understand
                     """)
 
 
