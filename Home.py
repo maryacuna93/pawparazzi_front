@@ -71,7 +71,7 @@ with main_columns[1]:
                 # ----- RESULTS -----
                 top_breed, top_score = sorted_breeds[0]
                 if top_score > 0.8:
-                    st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
+                    st.markdown(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
                 elif 0.5 < top_score <= 0.8:
                     st.markdown(
                         f"""
@@ -87,7 +87,7 @@ with main_columns[1]:
                     - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.0f}%)
                     """)
                 else:
-                    st.info("""
+                    st.markdown("""
                     🐶 We are confused... It might be that:
                     - we don't know this breed
                     - there is no dog in the image
