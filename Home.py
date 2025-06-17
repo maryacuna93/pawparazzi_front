@@ -10,24 +10,20 @@ from toolkit import get_sample_image
 st.set_page_config(
     page_title="Pawparazzi",
     page_icon="🐶",
-    layout="centered"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-st.markdown("""
-    <style>
-    .hero {
-        background-image: url('https://images.unsplash.com/photo-1546421845-6471bdcf3edf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUwfHxkb2dzfGVufDB8fDB8fHww');
-        background-size: cover;
-        background-position: center 70%;
-        height: 400px;
-        border-radius: 12px;
-        margin-bottom: 30px;
-    }
-    </style>
-    <div class="hero"></div>
-    """, unsafe_allow_html=True)
+
+
 
 # ----- HEADER SECTION -----
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.image("https://images.unsplash.com/photo-1546421845-6471bdcf3edf?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUwfHxkb2dzfGVufDB8fDB8fHww")
+
+
+
 st.markdown("<h1 style='text-align: center;'>🐾 Pawparazzi</h1>", unsafe_allow_html=True)
 st.markdown("<h3 style='text-align: center;'>Can we guess the breed of your dog?</h3>", unsafe_allow_html=True)
 st.markdown("""
@@ -37,19 +33,26 @@ Upload a photo of your furry friend and let our magical breed detector reveal th
 </div>
 """, unsafe_allow_html=True)
 
-# ----- IMAGE UPLOAD -----
-uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=["jpg", "jpeg", "png"])
+main_columns = st.columns([1,1])
+with main_columns[0]:
+    # ----- IMAGE UPLOAD -----
+    uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=["jpg", "jpeg", "png"])
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    aspect_ratio = image.width / image.height
-    fixed_width = 500
-    fixed_height = int(fixed_width / aspect_ratio)
-    resized_image = image.resize((fixed_width, fixed_height))
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        st.image(resized_image, caption="📸 Your superstar!", use_container_width=False)
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file)
+        aspect_ratio = image.width / image.height
+        fixed_width = 400
+        fixed_height = int(fixed_width / aspect_ratio)
+        resized_image = image.resize((fixed_width, fixed_height))
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.image(resized_image, caption="📸 Your superstar!", use_container_width=False)
 
+with main_columns[1]:
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
     with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
         img_bytes = uploaded_file.getvalue()
         api_url = st.secrets['cloud_api_uri']
@@ -83,8 +86,7 @@ if uploaded_file is not None:
                 - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
                 """)
 
-            # ----- BREED CHART -----
-            st.markdown("### Confidence by Breed")
+
 
             chart_data = pd.DataFrame({
                 "Breed": [breed for breed, _ in sorted_breeds[:5]],
@@ -104,19 +106,28 @@ if uploaded_file is not None:
                 titleFontSize=16
             )
 
-            st.altair_chart(bar_chart, use_container_width=True)
-
+            relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
+            nb_images = min(len(relevant_breeds), 3)
             columns = st.columns([1 for _ in range(3)])
 
             sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
 
-            for i in range(3):
+            for i in range(nb_images):
                 with columns[i]:
                     st.image(sample_images[i], caption=f"{sorted_breeds[i]}", use_container_width=True)
+            # ----- BREED CHART -----
+            st.markdown("### Confidence by Breed")
+            st.altair_chart(bar_chart, use_container_width=True)
+
+
 
         else:
             st.error("🐾 Oops, something went wrong. Please try again later.")
             print(res.status_code, res.content)
+
+
+
+
 
 # ----- FOOTER -----
 st.markdown("""
