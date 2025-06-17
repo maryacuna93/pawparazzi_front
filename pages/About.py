@@ -55,8 +55,8 @@ if show_list:
 
 ("""
 ### 👩‍💻 Built by:
-- Maria Alejandra Acuña
-- Maria Englert
-- Hadrien Pulcini
-- Robin Rölz
+- [Maria Alejandra Acuña](https://github.com/maryacuna93)
+- [Maria Englert](https://github.com/mariaenglert)
+- [Hadrien Pulcini](https://github.com/hadulc)
+- [Robin Rölz](https://github.com/rroelz)
 """)
