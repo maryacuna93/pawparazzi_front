@@ -103,8 +103,14 @@ with main_columns[1]:
 
                 # Create a horizontal bar chart
                 bar_chart = alt.Chart(chart_data).mark_bar().encode(
-                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Horizontal axis
-                    x=alt.X("Confidence", title="Confidence Score"),  # Vertical axis
+                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Vertical axis
+                    x=alt.X(
+                        "Confidence",
+                        title="Confidence Score",
+                        scale=alt.Scale(domain=[0,1]),
+                        axis=alt.Axis(format='%')
+                        ),  # Horizontal axis
+                    color=alt.value('#D9455B'), #hex code for color bars
                     tooltip=["Breed", "Confidence"]
                 ).properties(
                     width=600,  # Chart width
