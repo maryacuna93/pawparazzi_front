@@ -49,88 +49,89 @@ with main_columns[0]:
             st.image(resized_image, caption="📸 Your superstar!", use_container_width=False)
 
 with main_columns[1]:
-    st.write("")
-    st.write("")
-    st.write("")
-    st.write("")
-    with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
-        img_bytes = uploaded_file.getvalue()
-        api_url = st.secrets['cloud_api_uri']
-        res = requests.post(api_url +"/upload_image", files={'img':img_bytes})
+    if uploaded_file is not None:
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
+            img_bytes = uploaded_file.getvalue()
+            api_url = st.secrets['cloud_api_uri']
+            res = requests.post(api_url +"/upload_image", files={'img':img_bytes})
 
-        if res.status_code == 200:
-            breeds = res.json()
-            sorted_breeds = sorted(
-                ((breed, float(value)) for breed, value in breeds.items()),
-                key=lambda x: x[1],
-                reverse=True
-            )
+            if res.status_code == 200:
+                breeds = res.json()
+                sorted_breeds = sorted(
+                    ((breed, float(value)) for breed, value in breeds.items()),
+                    key=lambda x: x[1],
+                    reverse=True
+                )
 
-            # ----- RESULTS -----
-            top_breed, top_score = sorted_breeds[0]
-            if top_score > 0.8:
-                st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.2f}% confidence)!")
-            elif 0.5 < top_score <= 0.8:
-                st.markdown(f"""
-                    <div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffeeba; border-radius:8px;">
-                        <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.2f}%)?</strong><br>
-                         We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.2f}%) or
-                        <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
-                    </div>
-                """, unsafe_allow_html=True)
-            elif 0.2 < top_score <= 0.5:
-                st.info(f"""
-                🐶 We're not totally sure, but here are our top guesses:
-                - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.2f}%)
-                - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.2f}%)
-                - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
-                """)
+                # ----- RESULTS -----
+                top_breed, top_score = sorted_breeds[0]
+                if top_score > 0.8:
+                    st.success(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.2f}% confidence)!")
+                elif 0.5 < top_score <= 0.8:
+                    st.markdown(f"""
+                        <div style="background-color:#fff3cd; padding:15px; border-left:5px solid #ffeeba; border-radius:8px;">
+                            <strong>🤔 Is your dog a <span style="color:#856404;">{top_breed}</span> ({top_score * 100:.2f}%)?</strong><br>
+                            We also suspect <strong>{sorted_breeds[1][0]}</strong> ({sorted_breeds[1][1] * 100:.2f}%) or
+                            <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
+                        </div>
+                    """, unsafe_allow_html=True)
+                elif 0.2 < top_score <= 0.5:
+                    st.info(f"""
+                    🐶 We're not totally sure, but here are our top guesses:
+                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.2f}%)
+                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.2f}%)
+                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
+                    """)
+                else:
+                    st.info(f"""
+                    🐶 We are confused... It might be that\n
+                        - we don't know this breed\n
+                        - there is no dog in the image\n
+                        - the image is blurry or too difficult to understand
+                    """)
+
+
+
+                chart_data = pd.DataFrame({
+                    "Breed": [breed for breed, _ in sorted_breeds[:5]],
+                    "Confidence": [score for _, score in sorted_breeds[:5]]
+                })
+
+                # Create a horizontal bar chart
+                bar_chart = alt.Chart(chart_data).mark_bar().encode(
+                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Horizontal axis
+                    x=alt.X("Confidence", title="Confidence Score"),  # Vertical axis
+                    tooltip=["Breed", "Confidence"]
+                ).properties(
+                    width=600,  # Chart width
+                    height=300  # Chart height
+                ).configure_axis(
+                    labelFontSize=14,
+                    titleFontSize=16
+                )
+
+                relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
+                nb_images = min(len(relevant_breeds), 3)
+                columns = st.columns([1 for _ in range(3)])
+
+                sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
+
+                for i in range(nb_images):
+                    with columns[i]:
+                        st.image(sample_images[i], caption=f"{sorted_breeds[i]}", use_container_width=True)
+                # ----- BREED CHART -----
+                st.markdown("### Confidence by Breed")
+                st.altair_chart(bar_chart, use_container_width=True)
+
+
+
             else:
-                st.info(f"""
-                🐶 We are confused... It might be that\n
-                    - we don't know this breed\n
-                    - there is no dog in the image\n
-                    - the image is blurry or too difficult to understand
-                """)
-
-
-
-            chart_data = pd.DataFrame({
-                "Breed": [breed for breed, _ in sorted_breeds[:5]],
-                "Confidence": [score for _, score in sorted_breeds[:5]]
-            })
-
-            # Create a horizontal bar chart
-            bar_chart = alt.Chart(chart_data).mark_bar().encode(
-                y=alt.Y("Breed", sort='-x', title="Breed"),   # Horizontal axis
-                x=alt.X("Confidence", title="Confidence Score"),  # Vertical axis
-                tooltip=["Breed", "Confidence"]
-            ).properties(
-                width=600,  # Chart width
-                height=300  # Chart height
-            ).configure_axis(
-                labelFontSize=14,
-                titleFontSize=16
-            )
-
-            relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
-            nb_images = min(len(relevant_breeds), 3)
-            columns = st.columns([1 for _ in range(3)])
-
-            sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
-
-            for i in range(nb_images):
-                with columns[i]:
-                    st.image(sample_images[i], caption=f"{sorted_breeds[i]}", use_container_width=True)
-            # ----- BREED CHART -----
-            st.markdown("### Confidence by Breed")
-            st.altair_chart(bar_chart, use_container_width=True)
-
-
-
-        else:
-            st.error("🐾 Oops, something went wrong. Please try again later.")
-            print(res.status_code, res.content)
+                st.error("🐾 Oops, something went wrong. Please try again later.")
+                print(res.status_code, res.content)
 
 
 
