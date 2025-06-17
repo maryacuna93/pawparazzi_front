@@ -78,13 +78,21 @@ with main_columns[1]:
                         <strong>{sorted_breeds[2][0]}</strong> ({sorted_breeds[2][1] * 100:.2f}%).
                     </div>
                 """, unsafe_allow_html=True)
-            else:
+            elif 0.2 < top_score <= 0.5:
                 st.info(f"""
                 🐶 We're not totally sure, but here are our top guesses:
                 - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.2f}%)
                 - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.2f}%)
                 - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.2f}%)
                 """)
+            else:
+                st.info(f"""
+                🐶 We are confused... It might be that\n
+                    - we don't know this breed\n
+                    - there is no dog in the image\n
+                    - the image is blurry or too difficult to understand
+                """)
+
 
 
 
