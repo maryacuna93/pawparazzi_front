@@ -36,13 +36,17 @@ Upload a photo of your furry friend and let our magical breed detector reveal th
 st.markdown("---")
 
 main_columns = st.columns([1,2])
+start_run = None
 with main_columns[0]:
     # ----- IMAGE UPLOAD -----
-    uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=["jpg", "jpeg", "png"])
+    uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕 and use our cropping tool", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
-        left_cols = st.columns([4,1])
-        with left_cols[0]:
+        left_top_cols = st.columns([1,1,1,1,1])
+        with left_top_cols[2]:
+            start_run = st.button("Let's go 📸")
+        left_bot_cols = st.columns([1,5,1])
+        with left_bot_cols[1]:
             #uploading the image to the streamlit site
             image = Image.open(uploaded_file)
             aspect_ratio = image.width / image.height
@@ -56,11 +60,10 @@ with main_columns[0]:
                 realtime_update=True,
                 box_color="#000000"
                 )
-        with left_cols[1]:
-            start_run = st.button("Let's go 📸")
+
 
 with main_columns[1]:
-    if (uploaded_file is not None) & start_run:
+    if (uploaded_file is not None) and start_run:
         with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
             #retrieving the image byte data from the cropped image
             img_byte_arr = io.BytesIO()
@@ -106,7 +109,7 @@ with main_columns[1]:
                 st.error("🐾 Oops, something went wrong. Please try again later.")
                 print(res.status_code, res.content)
 
-    if (uploaded_file is not None) & start_run:
+    if (uploaded_file is not None) and start_run:
         chart_data = pd.DataFrame({
             "Breed": [breed for breed, _ in sorted_breeds[:5]],
             "Confidence": [score for _, score in sorted_breeds[:5]]
