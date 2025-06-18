@@ -124,7 +124,7 @@ with main_columns[1]:
 
                 for i in range(nb_images):
                     with columns[i]:
-                        st.image(sample_images[i], caption=f"{sorted_breeds[i][0]}, {sorted_breeds[i][1]* 100:.0f} %", use_container_width=True)
+                        st.image(sample_images[i], caption=f"{sorted_breeds[i][0]}, {sorted_breeds[i][1]* 100:.0f} %", use_container_width=False)
                 # ----- BREED CHART -----
                 st.markdown("### Confidence by Breed")
                 st.altair_chart(bar_chart, use_container_width=True)
