@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_cropper import st_cropper
 from PIL import Image
 import requests
 import io
@@ -40,101 +41,119 @@ with main_columns[0]:
     uploaded_file = st.file_uploader("Upload a clear image of your dog 🐕", type=["jpg", "jpeg", "png"])
 
     if uploaded_file is not None:
+        #uploading the image to the streamlit site
         image = Image.open(uploaded_file)
         aspect_ratio = image.width / image.height
         fixed_width = 400
         fixed_height = int(fixed_width / aspect_ratio)
         resized_image = image.resize((fixed_width, fixed_height))
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.image(resized_image, caption="📸 Your superstar!", use_container_width=False)
+        #cropping the image and displaying it
+        cropped_image = st_cropper(
+            resized_image,
+            default_coords=(10,fixed_width-10,10,fixed_height-10),
+            realtime_update=True,
+            box_color="#000000"
+            )
 
 with main_columns[1]:
-    if uploaded_file is not None:
-        with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
-            img_bytes = uploaded_file.getvalue()
-            api_url = st.secrets['cloud_api_uri']
-            res = requests.post(api_url +"/upload_image", files={'img':img_bytes})
+    top_columns = st.columns([1,4,1])
+    with top_columns[0]:
+        start_run = st.button("📸")
+        aspect_cropped = cropped_image.width / cropped_image.height
+        fixed_width_cropped = 300
+        if 0.56 < aspect_cropped <1.77:
+            fixed_height_cropped = int(fixed_width_cropped / aspect_cropped)
+        else:
+            fixed_height_cropped=300
+        resized_cropped = cropped_image.resize((fixed_width_cropped, fixed_height_cropped))
+        st.image(resized_cropped, caption="📸 Your superstar!", use_container_width=False)
+    with top_columns[1]:
+        if (uploaded_file is not None) & start_run:
+            with st.spinner("Our tiny experts are deliberating 🕵️‍♂️..."):
+                #retrieving the image byte data from the cropped image
+                img_byte_arr = io.BytesIO()
+                cropped_image.save(img_byte_arr, format='PNG')
+                img_bytes = img_byte_arr.getvalue()
+                api_url = st.secrets['cloud_api_uri']
+                res = requests.post(api_url +"/upload_image", files={'img':img_bytes})
 
-            if res.status_code == 200:
-                breeds = res.json()
-                sorted_breeds = sorted(
-                    ((breed, float(value)) for breed, value in breeds.items()),
-                    key=lambda x: x[1],
-                    reverse=True
-                )
+                if res.status_code == 200:
+                    breeds = res.json()
+                    sorted_breeds = sorted(
+                        ((breed, float(value)) for breed, value in breeds.items()),
+                        key=lambda x: x[1],
+                        reverse=True
+                    )
 
-                # ----- RESULTS -----
-                top_breed, top_score = sorted_breeds[0]
-                if top_score > 0.8:
-                    st.markdown(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
-                elif 0.5 < top_score <= 0.8:
-                    st.markdown(
-                        f"""
-                        🤔 Is your dog a **{top_breed}**({top_score * 100:.0f}%)?\n
-                        We think it could also be a **{sorted_breeds[1][0]}** ({sorted_breeds[1][1] * 100:.0f}%) or
-                        **{sorted_breeds[2][0]}** ({sorted_breeds[2][1] * 100:.0f}%).
+                    # ----- RESULTS -----
+                    top_breed, top_score = sorted_breeds[0]
+                    if top_score > 0.8:
+                        st.markdown(f"🎯 We think your dog is a **{top_breed}** ({top_score * 100:.0f}% confidence)!")
+                    elif 0.5 < top_score <= 0.8:
+                        st.markdown(
+                            f"""
+                            🤔 Is your dog a **{top_breed}**({top_score * 100:.0f}%)?\n
+                            We think it could also be a **{sorted_breeds[1][0]}** ({sorted_breeds[1][1] * 100:.0f}%) or
+                            **{sorted_breeds[2][0]}** ({sorted_breeds[2][1] * 100:.0f}%).
+                            """)
+                    elif 0.2 < top_score <= 0.5:
+                        st.markdown(f"""
+                        🐶 We're not totally sure, but here are our top guesses:
+                        - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.0f}%)
+                        - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.0f}%)
+                        - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.0f}%)
                         """)
-                elif 0.2 < top_score <= 0.5:
-                    st.markdown(f"""
-                    🐶 We're not totally sure, but here are our top guesses:
-                    - {sorted_breeds[0][0]} ({sorted_breeds[0][1] * 100:.0f}%)
-                    - {sorted_breeds[1][0]} ({sorted_breeds[1][1] * 100:.0f}%)
-                    - {sorted_breeds[2][0]} ({sorted_breeds[2][1] * 100:.0f}%)
-                    """)
+                    else:
+                        st.markdown("""
+                        🐶 We are confused... It might be that:
+                        - we don't know this breed
+                        - there is no dog in the image
+                        - the image is blurry or too difficult to understand
+                        """)
                 else:
-                    st.markdown("""
-                    🐶 We are confused... It might be that:
-                    - we don't know this breed
-                    - there is no dog in the image
-                    - the image is blurry or too difficult to understand
-                    """)
+                    st.error("🐾 Oops, something went wrong. Please try again later.")
+                    print(res.status_code, res.content)
 
 
 
-                chart_data = pd.DataFrame({
-                    "Breed": [breed for breed, _ in sorted_breeds[:5]],
-                    "Confidence": [score for _, score in sorted_breeds[:5]]
-                })
 
-                # Create a horizontal bar chart
-                bar_chart = alt.Chart(chart_data).mark_bar().encode(
-                    y=alt.Y("Breed", sort='-x', title="Breed"),   # Vertical axis
-                    x=alt.X(
-                        "Confidence",
-                        title="Confidence Score",
-                        scale=alt.Scale(domain=[0,1]),
-                        axis=alt.Axis(format='%')
-                        ),  # Horizontal axis
-                    color=alt.value('#D9455B'), #hex code for color bars
-                    tooltip=["Breed", "Confidence"]
-                ).properties(
-                    width=600,  # Chart width
-                    height=300  # Chart height
-                ).configure_axis(
-                    labelFontSize=14,
-                    titleFontSize=16
-                )
+    if (uploaded_file is not None) & start_run:
+        chart_data = pd.DataFrame({
+            "Breed": [breed for breed, _ in sorted_breeds[:5]],
+            "Confidence": [score for _, score in sorted_breeds[:5]]
+        })
 
-                relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
-                nb_images = min(len(relevant_breeds), 3)
-                columns = st.columns([1 for _ in range(3)])
+        # Create a horizontal bar chart
+        bar_chart = alt.Chart(chart_data).mark_bar().encode(
+            y=alt.Y("Breed", sort='-x', title="Breed"),   # Vertical axis
+            x=alt.X(
+                "Confidence",
+                title="Confidence Score",
+                scale=alt.Scale(domain=[0,1]),
+                axis=alt.Axis(format='%')
+                ),  # Horizontal axis
+            color=alt.value('#D9455B'), #hex code for color bars
+            tooltip=["Breed", "Confidence"]
+        ).properties(
+            width=600,  # Chart width
+            height=300  # Chart height
+        ).configure_axis(
+            labelFontSize=14,
+            titleFontSize=16
+        )
 
-                sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
+        relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
+        nb_images = min(len(relevant_breeds), 3)
+        columns = st.columns([1 for _ in range(3)])
 
-                for i in range(nb_images):
-                    with columns[i]:
-                        st.image(sample_images[i], caption=f"{sorted_breeds[i][0]}, {sorted_breeds[i][1]* 100:.0f} %", use_container_width=False)
-                # ----- BREED CHART -----
-                st.markdown("### Confidence by Breed")
-                st.altair_chart(bar_chart, use_container_width=True)
+        sample_images = [get_sample_image(tup[0]) for tup in sorted_breeds[:3]]
 
-
-
-            else:
-                st.error("🐾 Oops, something went wrong. Please try again later.")
-                print(res.status_code, res.content)
-
+        for i in range(nb_images):
+            with columns[i]:
+                st.image(sample_images[i], caption=f"{sorted_breeds[i][0]}, {sorted_breeds[i][1]* 100:.0f} %", use_container_width=True)
+        # ----- BREED CHART -----
+        st.markdown("### Confidence by Breed")
+        st.altair_chart(bar_chart, use_container_width=True)
 
 
 
