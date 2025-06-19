@@ -134,7 +134,7 @@ with main_columns[1]:
             titleFontSize=16
         )
 
-        relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.1]
+        relevant_breeds = [(breed, value) for breed, value in sorted_breeds if value > 0.01]
         nb_images = min(len(relevant_breeds), 3)
         columns = st.columns([1 for _ in range(3)])
 
